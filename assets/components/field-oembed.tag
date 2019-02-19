@@ -2,60 +2,68 @@
 
   <style>
     [ref="thumbnail_url"] {
-      height: 160px;
+      height: 150px;
+      /* width: 100%; */
+      /* object-fit: cover; */
     }
   </style>
 
 
-  <div class="uk-display-block uk-panel uk-panel-box uk-panel-card uk-padding-remove">
-    <div class="uk-flex uk-flex-middle uk-flex-center uk-text-muted">
-      <!--  Thumbnail Image  -->
-      <div class="uk-width-1-1 uk-text-center uk-bg-transparent-pattern" show="{ embedData.thumbnail_url }">
-        <img ref="thumbnail_url" src="{ embedData.thumbnail_url }" />
-      </div>
+  <!--  Nothing fetched yet  -->
+  <div class="uk-placeholder uk-text-center uk-text-muted" if="{!embedData.url}">
+    <!--  Icon + link to enter oEmbed URL  -->
+    <div if="{ !loading }">
+      <img class="uk-svg-adjust" riot-src="{ App.base('/assets/app/media/icons/assets.svg') }" width="100" data-uk-svg />
+      <p>{ App.i18n.get('No oEmbed URL') }. <a onclick="{ setUrl }">{ App.i18n.get('Enter one') }</a></p>
+    </div>
 
-      <!--  Nothing fetched yet menu  -->
-      <div class="uk-text-center uk-margin-top uk-margin-bottom" show="{ !embedData.url }">
-        <a onclick="{ editUrl }">
-          <img
-            class="uk-svg-adjust uk-text-muted"
-            riot-src="{App.base('/assets/app/media/icons/import.svg')}"
-            width="60"
-            height="60"
-            data-uk-svg
-          />
-          <div class="uk-margin-top">
-            <span class="uk-button uk-button-link">{ App.i18n.get('Enter oEmbed Url') }</span>
-          </div>
-        </a>
+    <!--  Loading indicator  -->
+    <div if="{ loading }" class="uk-position-relative">
+      <i class="uk-icon-spinner uk-icon-spin uk-position-center"></i>
+      <canvas width="160" height="160"></canvas>
+    </div>
+  </div>
+
+  <div class="uk-panel uk-panel-box uk-padding-remove uk-panel-card" if="{embedData.url}">
+    <!--  Thumbnail Image or Icon  -->
+    <div class="uk-overlay uk-display-block uk-position-relative uk-bg-transparent-pattern">
+      <canvas class="uk-responsive-width" width="200" height="150"></canvas>
+      <div class="uk-position-absolute uk-position-cover uk-flex uk-flex-middle">
+        <div class="uk-width-1-1 uk-text-center">
+          <!--  TODO  -->
+          <span if="{ !embedData.thumbnail_url }"
+            ><i class="uk-h1 uk-text-muted uk-icon-{ getIconCls(embedData.type) }"></i
+          ></span>
+
+          <a
+            href="{ embedData.thumbnail_url }"
+            data-uk-lightbox="type:'image'"
+            title="{ embedData.thumbnail_width && [embedData.thumbnail_width, embedData.thumbnail_height].join('x') }"
+          >
+            <img ref="thumbnail_url" src="{ embedData.thumbnail_url }" />
+          </a>
+        </div>
       </div>
     </div>
 
-    <div class="uk-panel-body" show="{ embedData.url }">
-      <ul class="uk-grid uk-grid-small uk-flex-center ">
-        <li>
-          <a class="uk-text-muted" onclick="{ editUrl }" title="{ App.i18n.get('Enter Embed Url') }" data-uk-tooltip
-            ><i class="uk-icon-link"></i
-          ></a>
-        </li>
-        <li>
-          <a class="uk-text-muted" onclick="{ showMeta }" title="{ App.i18n.get('Edit meta data') }" data-uk-tooltip
-            ><i class="uk-icon-cog"></i
-          ></a>
-        </li>
-        <li>
-          <a class="uk-text-danger" onclick="{ remove }" title="{ App.i18n.get('Reset') }" data-uk-tooltip
-            ><i class="uk-icon-trash-o"></i
-          ></a>
-        </li>
-      </ul>
+    <div class="uk-panel-body">
+      <!--  Embedded Content Info  -->
+      <div class="uk-margin-small-top uk-text-truncate">
+        <a href="{ embedData.url }" target="_blank">{ embedData.title }</a>
+      </div>
+      <div class="uk-text-small uk-text-muted">
+        <strong>{ embedData.provider_name }</strong>
+        | { embedData.type }
+      </div>
 
-      <br />
+      <!--  Actions  -->
+      <div class="uk-margin-top">
+        <a class="uk-button uk-button-small uk-margin-small-right" onclick="{ setUrl }">{ App.i18n.get('Replace') }</a>
 
-      <!--  Embedded content info  -->
-      <a show="{ embedData.title }" href="{ embedData.url }" target="_blank">{ embedData.title }</a>
-      <div class="uk-text-muted" show="{ embedData.provider_name }">
-        <i class="uk-icon-cloud"></i> { embedData.provider_name }
+        <span class="uk-button-group">
+          <a class="uk-button uk-button-small" onclick="{ editMeta }"><i class="uk-icon-pencil"></i></a>
+          <a class="uk-button uk-button-small uk-text-danger" onclick="{ reset }"><i class="uk-icon-trash-o"></i></a>
+        </span>
       </div>
     </div>
   </div>
@@ -87,7 +95,6 @@
   <script>
     riot.util.bind(this);
 
-    const _that = this;
     const _default = {
       title: '',
       url: '',
@@ -95,6 +102,7 @@
       provider_name: '',
     };
 
+    this.loading = false;
     this.embedData = Object.create(_default);
 
     this.$updateValue = function(value, field) {
@@ -110,8 +118,11 @@
       }
     }.bind(this);
 
-    this.fetchdata = function(url) {
+    this.fetchdata = url => {
       if (url) {
+        this.loading = true;
+        this.update();
+
         const fetchUrl = `https://noembed.com/embed?url=${encodeURI(url)}`;
         fetch(fetchUrl)
           .then(response => {
@@ -132,17 +143,38 @@
           .catch(err => {
             console.error(err);
             App.ui.notify(`[Failed to fetch]: ${fetchUrl}`, 'danger');
+          })
+          .finally(() => {
+            this.loading = false;
+            this.update();
           });
       }
     };
 
-    this.editUrl = function() {
-      App.ui.prompt('Embed Url', undefined, function(url) {
-        _that.fetchdata(url);
-      });
+    this.getIconCls = type => {
+      switch (type) {
+        case 'photo':
+          return 'image';
+          break;
+        case 'video':
+          return 'video-camera';
+          break;
+        case 'link':
+          return 'link';
+          break;
+        case 'rich':
+          return 'paperclip';
+          break;
+
+        default:
+          return 'paperclip';
+          break;
+      }
     };
 
-    this.showMeta = function() {
+    this.setUrl = () => App.ui.prompt('oEmbed Url', '', url => this.fetchdata(url));
+
+    this.editMeta = () => {
       this._meta = {
         title: {
           type: 'text',
@@ -154,19 +186,14 @@
         },
       };
 
-
-
       setTimeout(() => {
-          console.log(UIkit.modal);
         UIkit.modal(this.refs.modalmeta, { modal: false })
           .show()
-          .one('close.uk.modal', () => {
-            this._meta = null;
-          });
+          .one('hide.uk.modal', () => (this._meta = null));
       }, 50);
     };
 
-    this.remove = function() {
+    this.reset = () => {
       this.embedData = Object.create(_default);
       this.$setValue(this.embedData);
     };
