@@ -35,7 +35,7 @@
       <ul class="uk-grid uk-grid-small uk-flex-center ">
         <li>
           <a class="uk-text-muted" onclick="{ editUrl }" title="{ App.i18n.get('Enter Embed Url') }" data-uk-tooltip
-            ><i class="uk-icon-arrow-up"></i
+            ><i class="uk-icon-link"></i
           ></a>
         </li>
         <li>
@@ -146,11 +146,11 @@
       this._meta = {
         title: {
           type: 'text',
-          label: 'Titre',
+          label: App.i18n.get('Title'),
         },
         description: {
           type: 'textarea',
-          label: 'Description',
+          label: App.i18n.get('Description'),
         },
       };
 
