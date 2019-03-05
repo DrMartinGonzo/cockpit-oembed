@@ -1,19 +1,22 @@
 <field-oembed>
-
   <style>
-    [ref="thumbnail_url"] {
+    [ref='thumbnail_url'] {
       height: 150px;
       /* width: 100%; */
       /* object-fit: cover; */
     }
   </style>
 
-
   <!--  Nothing fetched yet  -->
   <div class="uk-placeholder uk-text-center uk-text-muted" if="{!embedData.url}">
     <!--  Icon + link to enter oEmbed URL  -->
     <div if="{ !loading }">
-      <img class="uk-svg-adjust" riot-src="{ App.base('/assets/app/media/icons/assets.svg') }" width="100" data-uk-svg />
+      <img
+        class="uk-svg-adjust"
+        riot-src="{ App.base('/assets/app/media/icons/assets.svg') }"
+        width="100"
+        data-uk-svg
+      />
       <p>{ App.i18n.get('No oEmbed URL') }. <a onclick="{ setUrl }">{ App.i18n.get('Enter one') }</a></p>
     </div>
 
@@ -90,7 +93,6 @@
       </div>
     </div>
   </div>
-
 
   <script>
     riot.util.bind(this);
@@ -198,5 +200,4 @@
       this.$setValue(this.embedData);
     };
   </script>
-
 </field-oembed>
