@@ -2,8 +2,6 @@
   <style>
     [ref='thumbnail_url'] {
       height: 150px;
-      /* width: 100%; */
-      /* object-fit: cover; */
     }
   </style>
 
@@ -107,7 +105,7 @@
     this.loading = false;
     this.embedData = Object.create(_default);
 
-    this.$updateValue = function(value, field) {
+    this.$updateValue = (value, field) => {
       value = value || Object.create(_default);
 
       if (value && !value.url) {
@@ -118,7 +116,7 @@
         this.embedData = value;
         return this.update();
       }
-    }.bind(this);
+    };
 
     this.fetchdata = url => {
       if (url) {
