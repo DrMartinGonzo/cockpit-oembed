@@ -1,4 +1,6 @@
-# oEmbed Field for [Cockpit](https://github.com/agentejo/cockpit)
+# cockpit-oembed
+
+oEmbed Field for [Cockpit CMS](https://github.com/agentejo/cockpit)
 
 Uses noembed api https://noembed.com/.  
 This is mostly untested, I just needed a quick solution. Feel free to improve !
@@ -7,7 +9,8 @@ This is mostly untested, I just needed a quick solution. Feel free to improve !
 
 You can customize title and description using cog button.
 
-sample response :
+## Sample response structure
+
 ```json
 {
   "embed": {
