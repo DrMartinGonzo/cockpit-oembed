@@ -37,7 +37,7 @@ You can customize title and description using cog button.
 
 ```
 $ cd cockpit/modules/addons
-$ git clone git@github.com:DrMartinGonzo/field-oembed.git
+$ git clone git@github.com:DrMartinGonzo/cockpit-oembed.git
 ```
 
 _Note: Directory must be named **field-oembed** for Cockpit to register addon._
